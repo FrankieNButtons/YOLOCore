@@ -21,19 +21,22 @@ ultralytics.checks();
 
 class Detector:
     """
-    **Description**
+    
+    **Description**  
     The Detector class encapsulates YOLOv8 inference logic and provides an interface
     to detect objects in an image, optionally draw bounding boxes, labels, confidence scores, and object counts on the image.
 
-    **Params**
-    - SUPPORTTED_CATEGORIES: List[str], the whitelisted categories for detection
-    - model: YOLO, the YOLO model instance
-    - outImg: Optional[np.ndarray], the output image with drawn detections
-    - detailedResult: Dict[str, Any], the dictionary containing detection stats
-    - detectedCounts: Dict[str, int], record counts for each detected label
-    - detectedBoxes: List[List[float]], bounding boxes [x1,y1,x2,y2] in pixel coords
-    - detectedLabels: List[str], labels of each detection
-    - dectectedConf: List[float], confidence for each detection
+    **Properties**  
+    - `SUPPORTTED_CATEGORIES`: List[str], the whitelisted categories for detection
+    - `outImg`: Optional[np.ndarray], The output image with bounding boxes, labels, etc. (if enabled).
+    - `detailedResult`: Dict[str, Any], A dict containing detection data (counts, boxes, labels, confidence, etc.).
+    - `detectedCounts`: Dict[str, int], A dict containing detected counts per label.
+    - `detectedBoxes`: List[List[float, float,float, float]], A list of detected bounding boxes.
+    - `detectedLabels`: List[str], A list of detected labels.
+    - `dectectedConf`: List[float], A list of detected confidence scores.
+    - `detectedIDs`: List[int], A list of tracking IDs.
+    - `detectedMidPoints`: List[Tuple[float, float]], A list of detected midpoints.
+    - `numProjection`: Dict[str, List[Tuple[int, int]]], A dict containing the number of projections per Category.
 
     **Methods**
     - `__init__`: Initializes the Detector object with the specified model path.
@@ -45,18 +48,18 @@ class Detector:
     SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
     MAX_COUNT: int = 100;
 
-    def __init__(self, model_path: str = "./weights/yolov8m.pt") -> None:
+    def __init__(self, modelPath: str = "./weights/yolov8m.pt") -> None:
         """
         **Description**
         Initializes the Detector object with a specified YOLOv8 model path.
 
         **Params**
-        - `model_path`: The file path for the YOLOv8 model weights.
+        - `modelPath`: The file path for the YOLOv8 model weights.
 
         **Returns**
         - None
         """
-        self._loadModel(model_path);
+        self._loadModel(modelPath);
         self.outImg: Optional[np.ndarray] = None;
         self.detailedResult: Dict[str, Any] = {
             "success": True,
@@ -64,7 +67,7 @@ class Detector:
             "message": "Successfully detected"
         };
         self.detectedCounts: Dict[str, int] = dict();
-        self.detectedBoxes: List[List[float]] = list();
+        self.detectedBoxes: List[List[float, float,float, float]] = list();
         self.detectedLabels: List[str] = list();
         self.dectectedConf: List[float] = list();
         self.detectedIDs: List[int] = list();
@@ -84,7 +87,7 @@ class Detector:
         verbosity:int = 0
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
-        **Description**
+        **Description**  
         The outer part of the detection process.
         """
         # 执行检测
@@ -241,7 +244,7 @@ class Detector:
 
     def _resetDetector(self) -> None:
         """
-        **Description**
+        **Description**  
         Resets the detection-related internal states of this Detector object.
 
         **Params**
@@ -264,18 +267,18 @@ class Detector:
 
 
 
-    def _loadModel(self, model_path: str) -> None:
+    def _loadModel(self, modelPath: str) -> None:
         """
         **Description**
         Loads the YOLOv8 model from the given file path.
 
         **Params**
-        - `model_path`: The path to the YOLOv8 model weights.
+        - `modelPath`: The path to the YOLOv8 model weights.
 
         **Returns**
         - None
         """
-        self.model = YOLO(model_path);
+        self.model = YOLO(modelPath);
 
 
 if __name__ == "__main__":
