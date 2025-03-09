@@ -5,11 +5,10 @@ import ultralytics;
 
 
 detector = Detector("./weights/yolov8x.pt");
-cap = cv2.VideoCapture("./videos/clip2.mp4");
-fps = 60
+cap = cv2.VideoCapture("./videos/clip1.mp4");
+fps = cap.get(cv2.CAP_PROP_FPS);
 while cap.isOpened():
     ret, frame = cap.read();
-    fps = cap.get(cv2.CAP_PROP_FPS);
     if not ret:
         print("Can't receive frame (stream end?). Exiting ...");
         break;

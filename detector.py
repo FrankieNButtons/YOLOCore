@@ -45,7 +45,6 @@ class Detector:
 
     def __init__(self, model_path: str = "./weights/yolov8m.pt") -> None:
         """
-        __doc__:
         **Description**
         Initializes the Detector object with a specified YOLOv8 model path.
 
@@ -111,7 +110,6 @@ class Detector:
         pallete: Optional[Dict[str, Tuple[int, int, int]]]
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
-        __doc__:
         **Description**
         Detect objects in an image using the loaded YOLOv8 model. Optionally draws 
         bounding boxes, labels, confidence scores, and detection counts on the image.
@@ -167,8 +165,8 @@ class Detector:
             try:
                 self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
             except Exception as e:
-                print(f"IDs retained as model made wrong in tracking as {e}");
-                noID = True
+                print(f"IDs resetted as model made wrong in tracking as {e}");
+                self.detectedIDs = list(range(len(self.detectedLabels)));
                 
                 
                 
