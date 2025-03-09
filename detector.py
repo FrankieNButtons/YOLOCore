@@ -40,7 +40,7 @@ class Detector:
     - `_loadModel`: Loads the YOLOv8 model.
     """
 
-    SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck", "dog"];
+    SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
 
     def __init__(self, model_path: str = "./weights/yolov8m.pt") -> None:
         """
@@ -54,7 +54,7 @@ class Detector:
         **Returns**
         - None
         """
-        self.model: YOLO = None;
+        self._loadModel(model_path);
         self.outImg: Optional[np.ndarray] = None;
         self.detailedResult: Dict[str, Any] = {
             "success": True,
@@ -66,10 +66,10 @@ class Detector:
         self.detectedLabels: List[str] = list();
         self.dectectedConf: List[float] = list();
         self.detectedIDs: List[int] = list();
-
-        self._loadModel(model_path);
-
-
+        self.detectedMidPoints: List[Tuple[float, float]] = list();
+        self.numProjection: Dict[str, List[Tuple[int, int]]] = dict();
+        
+        
     def detect(
         self,
         oriImg: np.ndarray,
@@ -99,8 +99,52 @@ class Detector:
         - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
         - `detailedResult`: A dict containing detection data (counts, boxes, labels, confidence, etc.).
         """
+        # 执行检测
+        outImg, detailedResult = self._detect(
+            oriImg,
+            conf,
+            addingBoxes,
+            addingLabel,
+            addingConf,
+            addingCount,
+            pallete
+        );
+        
+        # 释放资源
+        # self._resetDetector();
+        return outImg, detailedResult;
+        
+    def _detect(
+        self,
+        oriImg: np.ndarray,
+        conf: float,
+        addingBoxes: bool,
+        addingLabel: bool,
+        addingConf: bool,
+        addingCount: bool,
+        pallete: Optional[Dict[str, Tuple[int, int, int]]]
+    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+        """
+        __doc__:
+        **Description**
+        Detect objects in an image using the loaded YOLOv8 model. Optionally draws 
+        bounding boxes, labels, confidence scores, and detection counts on the image.
+
+        **Params**
+        - `oriImg`: The input image as a NumPy array (BGR color space).
+        - `conf`: The confidence threshold for detections (default=0.25).
+        - `addingBoxes`: Whether to draw bounding boxes on the output image.
+        - `addingLabel`: Whether to draw label text (e.g., "car", "dog").
+        - `addingConf`: Whether to append confidence score next to the label.
+        - `addingCount`: Whether to append count index per label (e.g., "No.1").
+        - `pallete`: Optional dict defining BGR color tuples for each label.
+
+        **Returns**
+        - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
+        - `detailedResult`: A dict containing detection data (counts, boxes, labels, confidence, etc.).
+        """
         if pallete is None:
-            # 自动构建 BGR 调色板
+            # 构建BGR调色板
             base_colors = sns.color_palette("bright", len(self.SUPPORTTED_CATEGORIES));
             pallete = {
                 cat: (
@@ -132,11 +176,21 @@ class Detector:
             box_list = results[0].boxes.xyxy.cpu().numpy();
 
             self.detectedLabels = [results[0].names[int(cls_idx)] for cls_idx in cls_list];
+            self.detectedMidPoints = [results[0].boxes.xywh.cpu().numpy()[:, 0:2]];
             self.dectectedConf = conf_list.tolist();
             self.detectedBoxes = box_list.tolist();
-            self.detectedIDs = results[0].boxes.id.cpu().numpy().tolist();
+            try:
+                self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
+            except Exception as e:
+                print(f"IDs retained as model made wrong in tracking as {e}");
+            
 
             for idx, tag in enumerate(self.detectedLabels):
+                self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1;
+                self.numProjection[tag] = self.numProjection.get(tag, []);
+                self.numProjection[tag].append((self.detectedIDs[idx], self.detectedCounts[tag]));
+                
+                
                 box = self.detectedBoxes[idx];
                 conf_val = self.dectectedConf[idx];
                 if tag in self.SUPPORTTED_CATEGORIES:
@@ -153,16 +207,17 @@ class Detector:
                     # 构建文本
                     labelString: str = "";
                     if addingCount:
-                        labelString += f" No.{self.detectedIDs[idx]}";
+                        num = [x[1] for x in self.numProjection[tag] if x[0] == self.detectedIDs[idx]][0];
+                        labelString += f" No.{num} ";
                     if addingLabel:
-                        labelString += tag;
+                        labelString += tag.capitalize();
                     if addingConf:
                         labelString += f" {conf_val:.2f}";
 
 
-                    # 绘制文本
+                    # 构建文本
                     if labelString:
-                        # 为使文本不被框覆盖，可稍微上移几个像素
+                        # 文本上移几个像素
                         cv2.putText(
                             self.outImg,
                             labelString,
@@ -230,7 +285,7 @@ class Detector:
 
 
 if __name__ == "__main__":
-    detector: Detector = Detector("./weights/yolov8m.pt");
+    detector: Detector = Detector("./weights/yolov8x.pt");
     img: np.ndarray = cv2.imread("./dog.jpeg");
     
     processedImg, detailedResult = detector.detect(img);
