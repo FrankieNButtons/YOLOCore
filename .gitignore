@@ -1,0 +1,7 @@
+.venv/
+outputs/
+videos/
+runs/
+weights/
+__pycache__/
+deer&dear.JPG
