@@ -65,6 +65,7 @@ class Detector:
         self.detectedBoxes: List[List[float]] = list();
         self.detectedLabels: List[str] = list();
         self.dectectedConf: List[float] = list();
+        self.detectedIDs: List[int] = list();
 
         self._loadModel(model_path);
 
@@ -111,7 +112,7 @@ class Detector:
             };
 
         try:
-            results = self.model.predict(source=oriImg, conf=conf);
+            results = self.model.track(source=oriImg, conf=conf, persist=True);
         except Exception as e:
             print(f"Unable to process images due to:\n{e}");
             self.outImg = oriImg;
@@ -133,12 +134,12 @@ class Detector:
             self.detectedLabels = [results[0].names[int(cls_idx)] for cls_idx in cls_list];
             self.dectectedConf = conf_list.tolist();
             self.detectedBoxes = box_list.tolist();
+            self.detectedIDs = results[0].boxes.id.cpu().numpy().tolist();
 
             for idx, tag in enumerate(self.detectedLabels):
                 box = self.detectedBoxes[idx];
                 conf_val = self.dectectedConf[idx];
                 if tag in self.SUPPORTTED_CATEGORIES:
-                    self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1;
 
                     if addingBoxes:
                         cv2.rectangle(
@@ -151,12 +152,13 @@ class Detector:
 
                     # 构建文本
                     labelString: str = "";
+                    if addingCount:
+                        labelString += f" No.{self.detectedIDs[idx]}";
                     if addingLabel:
                         labelString += tag;
                     if addingConf:
                         labelString += f" {conf_val:.2f}";
-                    if addingCount:
-                        labelString += f" No.{self.detectedCounts[tag]}";
+
 
                     # 绘制文本
                     if labelString:
