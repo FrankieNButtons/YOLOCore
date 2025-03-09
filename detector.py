@@ -179,21 +179,13 @@ class Detector:
                 for label in self.SUPPORTTED_CATEGORIES
             };
 
-        # 若用户不需要在图像上绘制框或标签，保存其数据于detailedResult
-        if not addingBoxes:
-            self.detailedResult["boxes"] = self.detectedBoxes;
-            self.detectedBoxes = [];
-
-        if not addingLabel:
-            self.detailedResult["labels"] = self.detectedLabels;
-            self.detectedLabels = [];
-
-        if not addingConf:
-            self.detailedResult["confidence"] = self.dectectedConf;
-            self.dectectedConf = [];
-
-        if not addingCount:
-            self.detailedResult["count"] = self.detectedCounts;
+        
+        self.detailedResult["boxes"] = self.detectedBoxes;
+        self.detailedResult["labels"] = self.detectedLabels;
+        self.detailedResult["confidence"] = self.dectectedConf;
+        self.detailedResult["count"] = self.detectedCounts;
+        
+        
 
         return self.outImg, self.detailedResult;
 
@@ -212,13 +204,15 @@ class Detector:
         self.outImg = None;
         self.detailedResult = {
             "success": True,
-            "count": dict(),
+            "count": {},
             "message": "Successfully detected"
         };
-        self.detectedCounts = dict();
-        self.detectedBoxes = list();
-        self.detectedLabels = list();
-        self.dectectedConf = list();
+        self.detectedCounts = {};
+        self.detectedIDs = [];
+        self.detectedBoxes = [];
+        self.detectedLabels = [];
+        self.dectectedConf = [];
+
 
 
     def _loadModel(self, model_path: str) -> None:
