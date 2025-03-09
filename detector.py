@@ -9,6 +9,8 @@ import numpy as np;
 import seaborn as sns;
 import matplotlib.pyplot as plt;
 import ultralytics;
+import os;
+import logging;
 
 from typing import Dict, List, Any, Tuple, Optional;
 from ultralytics import YOLO;
@@ -78,7 +80,8 @@ class Detector:
         addingLabel: bool = True,
         addingConf: bool = True,
         addingCount: bool = True,
-        pallete: Optional[Dict[str, Tuple[int, int, int]]] = None
+        pallete: Optional[Dict[str, Tuple[int, int, int]]] = None,
+        verbosity:int = 0
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
         **Description**
@@ -92,7 +95,8 @@ class Detector:
             addingLabel,
             addingConf,
             addingCount,
-            pallete
+            pallete,
+            verbosity
         );
         
         # 释放资源,避免累积编号
@@ -107,7 +111,8 @@ class Detector:
         addingLabel: bool,
         addingConf: bool,
         addingCount: bool,
-        pallete: Optional[Dict[str, Tuple[int, int, int]]]
+        pallete: Optional[Dict[str, Tuple[int, int, int]]],
+        verbosity: int
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
         **Description**
@@ -122,11 +127,15 @@ class Detector:
         - `addingConf`: Whether to append confidence score next to the label.
         - `addingCount`: Whether to append count index per label (e.g., "No.1").
         - `pallete`: Optional dict defining BGR color tuples for each label.
+        - `verbosity`: The level of verbosity for logging.
 
         **Returns**
         - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
         - `detailedResult`: A dict containing detection data (counts, boxes, labels, confidence, etc.).
         """
+        if verbosity == 2:
+            logging.getLogger("ultralytics").setLevel(logging.WARNING);
+        
         if pallete is None:
             # 构建BGR调色板
             base_colors = sns.color_palette("bright", len(self.SUPPORTTED_CATEGORIES));
@@ -224,7 +233,8 @@ class Detector:
         self.detailedResult["confidence"] = self.dectectedConf;
         self.detailedResult["count"] = self.detectedCounts;
         
-        
+        if verbosity == 0:
+            print("DetailedResult:", self.detailedResult);
 
         return self.outImg, self.detailedResult;
 
