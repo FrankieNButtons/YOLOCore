@@ -41,6 +41,7 @@ class Detector:
     """
 
     SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
+    MAX_COUNT: int = 100;
 
     def __init__(self, model_path: str = "./weights/yolov8m.pt") -> None:
         """
@@ -81,23 +82,8 @@ class Detector:
         pallete: Optional[Dict[str, Tuple[int, int, int]]] = None
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
-        __doc__:
         **Description**
-        Detect objects in an image using the loaded YOLOv8 model. Optionally draws 
-        bounding boxes, labels, confidence scores, and detection counts on the image.
-
-        **Params**
-        - `oriImg`: The input image as a NumPy array (BGR color space).
-        - `conf`: The confidence threshold for detections (default=0.25).
-        - `addingBoxes`: Whether to draw bounding boxes on the output image.
-        - `addingLabel`: Whether to draw label text (e.g., "car", "dog").
-        - `addingConf`: Whether to append confidence score next to the label.
-        - `addingCount`: Whether to append count index per label (e.g., "No.1").
-        - `pallete`: Optional dict defining BGR color tuples for each label.
-
-        **Returns**
-        - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
-        - `detailedResult`: A dict containing detection data (counts, boxes, labels, confidence, etc.).
+        The outer part of the detection process.
         """
         # 执行检测
         outImg, detailedResult = self._detect(
@@ -110,8 +96,8 @@ class Detector:
             pallete
         );
         
-        # 释放资源
-        # self._resetDetector();
+        # 释放资源,避免累积编号
+        self._resetDetector();
         return outImg, detailedResult;
         
     def _detect(
@@ -167,7 +153,6 @@ class Detector:
             return self.outImg, self.detailedResult;
 
         # 每次调用前重置检测结果
-        self._resetDetector();
         self.outImg = oriImg;
 
         if len(results) > 0 and results[0].boxes is not None:
@@ -183,10 +168,12 @@ class Detector:
                 self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
             except Exception as e:
                 print(f"IDs retained as model made wrong in tracking as {e}");
-            
-
+                noID = True
+                
+                
+                
             for idx, tag in enumerate(self.detectedLabels):
-                self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1;
+                self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1 % self.MAX_COUNT;
                 self.numProjection[tag] = self.numProjection.get(tag, []);
                 self.numProjection[tag].append((self.detectedIDs[idx], self.detectedCounts[tag]));
                 
@@ -215,9 +202,8 @@ class Detector:
                         labelString += f" {conf_val:.2f}";
 
 
-                    # 构建文本
+                    # 绘制文本
                     if labelString:
-                        # 文本上移几个像素
                         cv2.putText(
                             self.outImg,
                             labelString,
