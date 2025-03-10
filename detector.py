@@ -125,12 +125,12 @@ class Detector:
         **Params**
         - `oriImg`: np.ndarray, The input image as a NumPy array (BGR color space).
         - `conf`: float, The confidence threshold for detections (default=0.25).
-        - `addingBoxes`: Whether to draw bounding boxes on the output image.
-        - `addingLabel`: Whether to draw label text (e.g., "car", "dog").
-        - `addingConf`: Whether to append confidence score next to the label.
-        - `addingCount`: Whether to append count index per label (e.g., "No.1").
-        - `pallete`: Optional dict defining BGR color tuples for each label.
-        - `verbosity`: The level of verbosity for logging(0, 1, 2, larger for simpler output, defaultly `0`)
+        - `addingBoxes`: bool, Whether to draw bounding boxes on the output image.
+        - `addingLabel`: bool, Whether to draw label text (e.g., "car", "dog").
+        - `addingConf`: bool, Whether to append confidence score next to the label.
+        - `addingCount`: bool, Whether to append count index per label (e.g., "No.1").
+        - `pallete`: Dict[str, Tuple[int, int, int]], Optional dict defining BGR color tuples for each label.
+        - `verbosity`: int, The level of verbosity for logging(0, 1, 2, larger for simpler output, defaultly `0`)
 
         **Returns**
         - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
