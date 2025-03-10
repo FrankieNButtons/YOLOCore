@@ -50,7 +50,7 @@ class Detector:
 
     def __init__(self, modelPath: str = "./weights/yolov8m.pt") -> None:
         """
-        **Description**
+        **Description**  
         Initializes the Detector object with a specified YOLOv8 model path.
 
         **Params**
@@ -118,19 +118,19 @@ class Detector:
         verbosity: int
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
-        **Description**
+        **Description**  
         Detect objects in an image using the loaded YOLOv8 model. Optionally draws 
         bounding boxes, labels, confidence scores, and detection counts on the image.
 
         **Params**
-        - `oriImg`: The input image as a NumPy array (BGR color space).
-        - `conf`: The confidence threshold for detections (default=0.25).
+        - `oriImg`: np.ndarray, The input image as a NumPy array (BGR color space).
+        - `conf`: float, The confidence threshold for detections (default=0.25).
         - `addingBoxes`: Whether to draw bounding boxes on the output image.
         - `addingLabel`: Whether to draw label text (e.g., "car", "dog").
         - `addingConf`: Whether to append confidence score next to the label.
         - `addingCount`: Whether to append count index per label (e.g., "No.1").
         - `pallete`: Optional dict defining BGR color tuples for each label.
-        - `verbosity`: The level of verbosity for logging.
+        - `verbosity`: The level of verbosity for logging(0, 1, 2, larger for simpler output, defaultly `0`)
 
         **Returns**
         - `outImg`: The resultant image (with bounding boxes, labels, etc. if enabled).
@@ -177,7 +177,7 @@ class Detector:
             try:
                 self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
             except Exception as e:
-                print(f"IDs resetted as model made wrong in tracking as {e}");
+                print(f"IDs resetted as model didnot convolve in tracking for {e}");
                 self.detectedIDs = list(range(len(self.detectedLabels)));
                 
                 
@@ -269,7 +269,7 @@ class Detector:
 
     def _loadModel(self, modelPath: str) -> None:
         """
-        **Description**
+        **Description**  
         Loads the YOLOv8 model from the given file path.
 
         **Params**

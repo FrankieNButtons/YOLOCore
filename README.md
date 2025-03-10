@@ -41,7 +41,7 @@ The Detector class encapsulates YOLOv8 inference logic and provides an method to
  - `addingConf`: Whether to append confidence score next to the label.
  - `addingCount`: Whether to append count index per label (e.g., "No.1").
  - `pallete`: Optional dict defining BGR color tuples for each label.
- - `verbosity`: The level of verbosity for logging.
+ - `verbosity`: The level of verbosity for logging(0, 1, 2, larger for simpler output, defaultly `0`)
 ##### Returns
  - `outImg`: the detected image.
  - `detailedResult`: Result of detection in detailed format.
