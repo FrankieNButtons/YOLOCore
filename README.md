@@ -10,13 +10,54 @@ Inference Core based on YOLOv8 for competition
 3. Create a detector object(With certain `model_path`)  
 `detector = Detector(model_path='./weights/yolov8x.pt')`
 
-4. Use `detector.detect` to detect image
+4. Use `detector.detect` to detect image  
 `detections = detector.detect(image)`
+
+## Examples
+1. Detect(or Track) with detector
+```python
+detector: Detector = Detector("./weights/yolov8x.pt");
+img: np.ndarray = cv2.imread("./dog.jpeg");
+
+processedImg, detailedResult = detector.detect(img);
+print("detailedResult:", detailedResult);
+
+cv2.imshow("Detected Image", processedImg);
+cv2.waitKey(0);
+cv2.destroyAllWindows();
+```
+2. Track Objects in a video and enumerate object in each category seperately
+```python
+from detector import Detector;
+import cv2;
+import numpy as np;
+import ultralytics;
+
+
+detector = Detector("./weights/yolov8x.pt");
+cap = cv2.VideoCapture("./videos/clip1.mp4");
+fps = cap.get(cv2.CAP_PROP_FPS);
+while cap.isOpened():
+    ret, frame = cap.read();
+    if not ret:
+        print("Can't receive frame (Or stream end?). Exiting ...");
+        break;
+    
+    processedImg, detailedResult = detector.detect(frame, 
+                                                   addingConf=False, 
+                                                   verbosity=2);
+
+    cv2.imshow("Detected Image", processedImg);
+    key = cv2.waitKey(int(1000 / fps));
+    if key == ord("q"):
+        break;
+cv2.destroyAllWindows();
+```
 
 ## Detector
 The Detector class encapsulates YOLOv8 inference logic and provides an method to track objects with `YOLO` & `BoT-SORT` in an image, optionally draw bounding boxes, labels, confidence scores, and object counts on the image.
 ### Properties
- - `SUPPORTTED_CATEGORIES`: List[str], the whitelisted categories for detection
+ - `SUPPORTTED_CATEGORIES`: List[str], the whitelisted categories for detection(Can be modified).
  - `outImg`: Optional[np.ndarray], The output image with bounding boxes, labels, etc. (if enabled).
  - `detailedResult`: Dict[str, Any], A dict containing detection data (counts, boxes, labels, confidence, etc.).
  - `detectedCounts`: Dict[str, int], A dict containing detected counts per label.
@@ -50,5 +91,3 @@ The Detector class encapsulates YOLOv8 inference logic and provides an method to
 ### Properties
 
 ### Methods
-
-

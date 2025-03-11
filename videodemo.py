@@ -10,11 +10,12 @@ fps = cap.get(cv2.CAP_PROP_FPS);
 while cap.isOpened():
     ret, frame = cap.read();
     if not ret:
-        print("Can't receive frame (stream end?). Exiting ...");
+        print("Can't receive frame (Or stream end?). Exiting ...");
         break;
     
-    processedImg, detailedResult = detector.detect(frame, addingConf=False, verbosity=2);
-
+    processedImg, detailedResult = detector.detect(frame, 
+                                                   addingConf=False, 
+                                                   verbosity=2);
 
     cv2.imshow("Detected Image", processedImg);
     key = cv2.waitKey(int(1000 / fps));
