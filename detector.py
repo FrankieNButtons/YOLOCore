@@ -177,7 +177,7 @@ class Detector:
             try:
                 self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
             except Exception as e:
-                print(f"IDs resetted as model didnot convolve in tracking for {e}");
+                print(f"IDs resetted as model didnot convolve in tracking.");
                 self.detectedIDs = list(range(len(self.detectedLabels)));
                 
                 
@@ -235,6 +235,9 @@ class Detector:
         self.detailedResult["labels"] = self.detectedLabels;
         self.detailedResult["confidence"] = self.dectectedConf;
         self.detailedResult["count"] = self.detectedCounts;
+        self.detailedResult["IDs"] = self.detectedIDs;
+        self.detailedResult["midPoints"] = self.detectedMidPoints;
+        self.detailedResult["numProjection"] = self.numProjection;
         
         if verbosity == 0:
             print("DetailedResult:", self.detailedResult);
