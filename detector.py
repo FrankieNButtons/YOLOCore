@@ -46,7 +46,7 @@ class Detector:
     """
 
     SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
-    MAX_COUNT: int = 100;
+    MAX_COUNT: int = 1000;
 
     def __init__(self, modelPath: str = "./weights/yolov8m.pt") -> None:
         """
@@ -171,7 +171,7 @@ class Detector:
             box_list = results[0].boxes.xyxy.cpu().numpy();
 
             self.detectedLabels = [results[0].names[int(cls_idx)] for cls_idx in cls_list];
-            self.detectedMidPoints = [results[0].boxes.xywh.cpu().numpy()[:, 0:2]];
+            self.detectedMidPoints = [results[0].boxes.xywh.cpu().numpy()[:, 0:2].tolist()];
             self.dectectedConf = conf_list.tolist();
             self.detectedBoxes = box_list.tolist();
             try:
@@ -289,7 +289,7 @@ if __name__ == "__main__":
     img: np.ndarray = cv2.imread("./dog.jpeg");
     
     processedImg, detailedResult = detector.detect(img);
-    print("detailedResult:", detailedResult);
+    # print("detailedResult:", detailedResult);
 
     cv2.imshow("Detected Image", processedImg);
     cv2.waitKey(0);
