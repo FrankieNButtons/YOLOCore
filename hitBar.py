@@ -33,7 +33,7 @@ class hitBar:
     """
     def __init__(
         self,
-        imgSize: Tuple[int,int],
+        imgSize: Tuple[int,int] = None,
         startPoint: Optional[Tuple[int,int]] = None,
         endPoint: Optional[Tuple[int,int]] = None,
         name: str = "hitBar",

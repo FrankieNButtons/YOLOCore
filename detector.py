@@ -95,7 +95,7 @@ class Detector:
         The outer part of the detection process.
         """
         # 执行检测
-        outImg, detailedResult = self._detect(
+        outImg, detailedResult, hitBarResult = self._detect(
             oriImg,
             conf,
             addingBoxes,
@@ -109,7 +109,7 @@ class Detector:
         
         # 释放资源,避免累积编号
         self._resetDetector();
-        return outImg, detailedResult;
+        return outImg, detailedResult, hitBarResult;
         
     def _detect(
         self,
@@ -252,8 +252,9 @@ class Detector:
         
         if verbosity == 0:
             print("DetailedResult:", self.detailedResult);
+            print("hitBarResult:", self.hitBarResults);
 
-        return self.outImg, self.detailedResult;
+        return self.outImg, self.detailedResult, self.hitBarResults;
 
 
     def _resetDetector(self) -> None:
@@ -300,7 +301,7 @@ if __name__ == "__main__":
     detector: Detector = Detector("./weights/yolov8s.pt");
     img: np.ndarray = cv2.imread("./dog.jpeg");
     
-    processedImg, detailedResult = detector.detect(img);
+    processedImg, detailedResult, _ = detector.detect(img);
     # print("detailedResult:", detailedResult);
 
     cv2.imshow("Detected Image", processedImg);
