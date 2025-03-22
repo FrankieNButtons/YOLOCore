@@ -299,9 +299,9 @@ class Detector:
 
 if __name__ == "__main__":
     detector: Detector = Detector("./weights/yolov8s.pt");
-    img: np.ndarray = cv2.imread("./dog.jpeg");
+    img: np.ndarray = cv2.imread("./image/dog.jpeg");
     
-    processedImg, detailedResult, _ = detector.detect(img);
+    processedImg, detailedResult , _ = detector.detect(img);
     # print("detailedResult:", detailedResult);
 
     cv2.imshow("Detected Image", processedImg);
