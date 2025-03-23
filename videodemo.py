@@ -4,8 +4,8 @@ import numpy as np;
 import ultralytics;
 
 
-detector = Detector("./weights/yolov8s.pt");
-cap = cv2.VideoCapture("./videos/clip1.mp4");
+detector = Detector("./weights/yolov8x.pt");
+cap = cv2.VideoCapture("./videos/clip2.mp4");
 fps = cap.get(cv2.CAP_PROP_FPS);
 while cap.isOpened():
     ret, frame = cap.read();
@@ -13,7 +13,7 @@ while cap.isOpened():
         print("Can't receive frame (Or stream end?). Exiting ...");
         break;
     
-    processedImg, detailedResult = detector.detect(frame, 
+    processedImg, detailedResult, _ = detector.detect(frame, 
                                                    addingConf=False, 
                                                    verbosity=2);
 
