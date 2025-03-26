@@ -4,7 +4,7 @@ from detector import Detector;
 import numpy as np;
 from typing import List, Dict, Any, Optional, Tuple;
 
-detector = Detector("./weights/yolov8x.pt");
+detector = Detector("./weights/yolo12s.pt");
 hb1 = hitBar(name="hitBar1", imgSize=(0, 320), startPoint=(620,200), endPoint=(620, 70), monitor=["person", "car", "bus"], width=10.0, maxLength=50, visualize=True);
 hb2 = hitBar(name="hitBar2", imgSize=(0, 320), startPoint=(225,125), endPoint=(350, 70), monitor=["person", "car", "bus", "truck"], width=15.0, maxLength=50, visualize=True);
 hb1._monitor(["truck"]);
@@ -17,7 +17,7 @@ while True:
         img, detailedResult, hitBarResults= detector.detect(frame, 
                                               addingConf=False, 
                                               hitBars=[hb1, hb2], 
-                                              verbosity=2);
+                                              verbosity=0);
         cv2.imshow("HitBar", img);
         
         key = cv2.waitKey(int(1000 / fps));

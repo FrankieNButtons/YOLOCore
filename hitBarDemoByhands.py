@@ -13,7 +13,7 @@ fps = video.get(cv2.CAP_PROP_FPS);
 while True:
     ret, frame = video.read();
     if ret:
-        img, detailedResult = detector.detect(frame, 
+        img, detailedResult, _ = detector.detect(frame, 
                                               addingConf=False, 
                                               verbosity=2);
         img, evenBetterResult = hitBar.update(img, detailedResult);
