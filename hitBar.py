@@ -102,6 +102,7 @@ class hitBar:
         self.history: List[Dict[str,Any]] = [];
         self.Accumulator: Dict[str,int] = {};
         self.monitoredCatagories: List[str] = [];
+        self.evenBetterResult: Dict[str,Any] = {};
 
         if monitor:
             self._monitor(monitor);
@@ -135,11 +136,15 @@ class hitBar:
         **Returns**  
         (imgOut, self.Accumulator)  
         - `imgOut`: The new image with the bar drawn (if visualize & 'img' present)
-        - `Accumulator`: The counters for each category
+        - `evenBetterResult`: A dictionary of hitting events.
         - 
         """
         
-
+        self.evenBetterResult = {
+            "name": self.name,
+            "hitDetails":[],
+            "Accumulator": {}
+        }
         self.history.append(detailedResult);
         if len(self.history) > self.maxLength:
             self.history.pop(0);
@@ -201,8 +206,13 @@ class hitBar:
                 if self._hasIn(pt, cat, objID, numInCat):
                     self.Accumulator[cat] += 1;
                     print(f"[{self.name}] {cat} No.{numInCat} (ID={objID})  count={self.Accumulator[cat]};");
-
-        return self.imgOut, self.Accumulator;
+                    self.evenBetterResult["hitDetails"].append({
+                        "cat": cat,
+                        "ID": objID,
+                        "numInCat": numInCat
+                    });
+        self.evenBetterResult["Accumulator"] = self.Accumulator;
+        return self.imgOut, self.evenBetterResult;
 
     def _hasIn(self, pt: Tuple[int, int], cat: str, objID: int, numInCat: Optional[int]) -> bool:
         """
