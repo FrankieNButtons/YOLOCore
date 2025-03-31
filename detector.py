@@ -305,18 +305,22 @@ class Detector:
         **Returns**
         - None
         """
-        self.outImg = None;
-        self.detailedResult = {
+        self.outImg: Optional[np.ndarray] = None;
+        self.detailedResult: Dict[str, Any] = {
             "success": True,
-            "count": {},
+            "count": dict(),
             "message": "Successfully detected"
         };
-        self.detectedCounts = {};
-        self.detectedIDs = [];
-        self.detectedBoxes = [];
-        self.detectedLabels = [];
-        self.dectectedConf = [];
-        self.hitBarResults: List[Dict[str, int]] = [];
+        self.detectedCounts: Dict[str, int] = dict();
+        self.detectedBoxes: List[List[float, float,float, float]] = list();
+        self.detectedLabels: List[str] = list();
+        self.dectectedConf: List[float] = list();
+        self.detectedIDs: List[int] = list();
+        self.detectedMidPoints: List[Tuple[float, float]] = list();
+        self.numProjection: Dict[str, List[Tuple[int, int]]] = dict();
+        self.hitBarResults: List[Dict[str, int]] = list();
+        self.accidentBoxes: List[Tuple[float, float, float, float]] = list();
+        self.accidentConf: List[float] = list();
 
 
 
