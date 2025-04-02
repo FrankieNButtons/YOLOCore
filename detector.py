@@ -53,7 +53,7 @@ class Detector:
     SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
     MAX_COUNT: int = 1000;
 
-    def __init__(self, modelPath: str = "./weights/yolov8m.pt") -> None:
+    def __init__(self, modelPath: str = "./weights/yolov8m.pt", accidentDetection: bool=True) -> None:
         """
         **Description**  
         Initializes the Detector object with a specified YOLOv8 model path.
@@ -64,7 +64,7 @@ class Detector:
         **Returns**
         - None
         """
-        self._loadModel(modelPath);
+        self._loadModel(modelPath, accidentDetection=accidentDetection);
         self.outImg: Optional[np.ndarray] = None;
         self.detailedResult: Dict[str, Any] = {
             "success": True,
@@ -163,7 +163,8 @@ class Detector:
             };
 
         try:
-            accidents = self.accDetector(oriImg);
+            if self.accDetector is not None:
+                accidents = self.accDetector(oriImg);
             results = self.model.track(source=oriImg, conf=conf, persist=True);
         except Exception as e:
             print(f"Unable to process images due to:\n{e}");
@@ -324,7 +325,7 @@ class Detector:
 
 
 
-    def _loadModel(self, modelPath: str) -> None:
+    def _loadModel(self, modelPath: str, accidentDetection: bool=True) -> None:
         """
         **Description**  
         Loads the YOLOv8 model from the given file path.
@@ -335,7 +336,8 @@ class Detector:
         **Returns**
         - None
         """
-        self.accDetector = YOLO("./weights/accdetect.pt");
+        if accidentDetection:
+            self.accDetector = YOLO("./weights/accdetect.pt");
         self.model = YOLO(modelPath);
 
 

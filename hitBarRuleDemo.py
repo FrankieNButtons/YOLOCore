@@ -3,10 +3,12 @@ import cv2;
 from detector import Detector;
 import numpy as np;
 from typing import List, Dict, Any, Optional, Tuple;
+import torch;
+
 
 h1his = [];
 h2his = [];
-detector = Detector("./weights/yolo12x.pt");
+detector = Detector("./weights/yolo12m.pt");
 hb1 = hitBar(name="hitBar1", imgSize=(0, 320), startPoint=(225,125), endPoint=(350, 70), monitor=["person", "car", "bus"], width=20.0, maxLength=50, visualize=True);
 hb2 = hitBar(name="hitBar2", imgSize=(0, 320), startPoint=(620,200), endPoint=(620, 70), monitor=["person", "car", "bus", "truck"], width=30.0, maxLength=50, visualize=True);
 hb1._monitor(["truck"]);
