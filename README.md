@@ -100,6 +100,7 @@ The Detector class encapsulates YOLOv8 inference logic and provides an method to
  - `__init__`: Initializes the Detector object with the specified model path.
  - `detect`: Detects objects in an image using the YOLOv8 model.
  - `_resetDetector`: Resets the Detector object.
+ > `accdetect.pt` must be put into `weights` derectory for this function to run in detector
  - `_loadModel`: Loads the YOLOv8 model.
 
 #### detect

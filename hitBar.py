@@ -1,7 +1,7 @@
 import numpy as np;
 import cv2;
 from typing import List, Dict, Any, Optional, Tuple;
-
+LANE_WIDTH = 3.625;
 class hitBar:
     """
     **Description**  
@@ -14,8 +14,12 @@ class hitBar:
     - `startPoint`: The start point of the hit bar (x, y).
     - `endPoint`: The end point of the hit bar (x, y).
     - `direction`: The normal vector of the line from startPoint to endPoint.
+    - `norm`: The normal vector of the line.
     - `width`: The half-thickness (in pixels) for realmIn & realmOut.
-    - `maxLength`: The maximum length of the history buffer. If exceeded, the oldest frame will be removed.
+    - `maxHis`: The maximum length of the history buffer. If exceeded, the oldest frame will be removed.
+    - `lanes`: the lanes number that the hitBar is perpendicular to.(for speed estimation).
+    - `fps`: The frames per second for the video.(for speed estimation).
+    - `length`: The length of the hitBar.
     - `realmIn`: The negative-side realm (4 points).
     - `realmOut`: The positive-side realm (4 points).
     - `name`: The name of the hit bar for debugging/logging.
@@ -23,6 +27,7 @@ class hitBar:
     - `history`: A list storing the previous frames' detection results.
     - `monitoredCatagories`: The categories that need to be counted or checked.
     - `Accumulator`: A dictionary counting the crossing events.
+    - `speedInFrame`: A list storing the speed of each frame(Unit km/h, with the width of each lane to be 3.625m).
 
     **Methods**  
     - `__init__`: Initialize the hit bar with geometry and optional visualization switch.
@@ -39,7 +44,9 @@ class hitBar:
         name: str = "hitBar",
         monitor: Optional[List[str]] = None,
         width: float = 10.0,
-        maxLength: int = 50,
+        maxHis: int = 50,
+        lanes: int = 2,
+        fps: int = 24,
         visualize: bool = True
     ):
         """
@@ -59,31 +66,34 @@ class hitBar:
         None;
         """
         self.name: str = name;
-        self.visualize = visualize;
+        self.visualize: bool = visualize;
         self.imgSize: Tuple[int,int] = imgSize;
+        self.lanes: int = lanes;
+        self.fps: int = fps;
 
         if not startPoint or not endPoint:
-            mid_row = self.imgSize[0] // 2;
-            self.startPoint = (0, mid_row);
-            self.endPoint   = (self.imgSize[1], mid_row);
+            midRow = self.imgSize[0] // 2;
+            self.startPoint = (0, midRow);
+            self.endPoint   = (self.imgSize[1], midRow);
         else:
             self.startPoint = startPoint;
             self.endPoint   = endPoint;
             
-        self.maxLength: int = maxLength;
+        self.maxHis: int = maxHis;
         self.width: float = width;
         dx = self.endPoint[0] - self.startPoint[0];
         dy = self.endPoint[1] - self.startPoint[1];
 
-        n = np.array([-dy, dx], dtype=np.float32);
-        norm_n = np.linalg.norm(n);
+        self.norm = np.array([-dy, dx], dtype=np.float32);
+        self.length: float = np.linalg.norm(self.norm).item();
+        norm_n = np.linalg.norm(self.norm);
         if norm_n < 1e-6:
             # Degenerate line
             self.direction = np.array([0,0], dtype=np.float32);
             self.realmIn  = np.array([self.startPoint]*4, dtype=np.float32);
             self.realmOut = np.array([self.endPoint]*4,   dtype=np.float32);
         else:
-            self.direction = n / norm_n;
+            self.direction = self.norm / norm_n;
 
             A = np.array(self.startPoint, dtype=np.float32);
             B = np.array(self.endPoint,   dtype=np.float32);
@@ -101,6 +111,7 @@ class hitBar:
 
         self.history: List[Dict[str,Any]] = [];
         self.Accumulator: Dict[str,int] = {};
+        self.speedInFrame: List[float] = [];
         self.monitoredCatagories: List[str] = [];
         self.evenBetterResult: Dict[str,Any] = {};
 
@@ -146,7 +157,7 @@ class hitBar:
             "Accumulator": {}
         }
         self.history.append(detailedResult);
-        if len(self.history) > self.maxLength:
+        if len(self.history) > self.maxHis:
             self.history.pop(0);
         self.Accumulator = {cat:0 for cat in self.monitoredCatagories};
 
@@ -167,21 +178,17 @@ class hitBar:
 
         self.imgOut = img.copy();
         if self.visualize:
-            # Draw the centerline in solid red
-            cv2.line(self.imgOut, self.startPoint, self.endPoint, (0,0,255), 2);
-        # Create an overlay for transparency
-            overlay = img.copy();
 
-            # Convert realmIn and realmOut to integer points
+            cv2.line(self.imgOut, self.startPoint, self.endPoint, (0,0,255), 2);
+
+            overlay = img.copy();
             ptsIn  = np.int32(self.realmIn.reshape(-1,1,2));
             ptsOut = np.int32(self.realmOut.reshape(-1,1,2));
 
-            # Fill the realms with semi-transparent colors
-            cv2.fillPoly(overlay, [ptsIn], (0,0,255,100));  # Red with transparency
-            cv2.fillPoly(overlay, [ptsOut], (255,0,0,100));  # Blue with transparency
+            cv2.fillPoly(overlay, [ptsIn], (0,0,255,100));
+            cv2.fillPoly(overlay, [ptsOut], (255,0,0,100));
 
-            # Blend the overlay with the original image
-            alpha = 0.4;  # Transparency level (0: fully transparent, 1: fully opaque)
+            alpha = 0.4;
             self.imgOut = cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0);
 
 
@@ -209,7 +216,8 @@ class hitBar:
                     self.evenBetterResult["hitDetails"].append({
                         "cat": cat,
                         "ID": objID,
-                        "numInCat": numInCat
+                        "numInCat": numInCat,
+                        "speed": self.speedInFrame[-1]
                     });
         self.evenBetterResult["Accumulator"] = self.Accumulator;
         return self.imgOut, self.evenBetterResult;
@@ -249,6 +257,8 @@ class hitBar:
                     if self._inRealm(oldPt, self.realmIn):
                         self.direction = (self.direction + np.array([pt[0] - oldPt[0], pt[1] - oldPt[1]], dtype=np.float32));
                         self.direction = self.direction / np.linalg.norm(self.direction);
+                        self.speedInFrame.append(np.linalg.norm(np.array([pt[0] - oldPt[0], pt[1] - oldPt[1]], dtype=np.float32)).item()
+                                                 * self.fps / self.length * self.lanes * LANE_WIDTH * 3.6) # Unit: km/h 
                         return True;
         return False;
 
