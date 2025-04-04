@@ -13,7 +13,7 @@ from ultralytics import solutions;
 import os;
 import logging;
 
-from typing import Dict, List, Any, Tuple, Optional;
+from typing import Dict, List, Any, Tuple, Optional, Set;
 from ultralytics import YOLO;
 from hitBar import hitBar;
 
@@ -38,7 +38,7 @@ class Detector:
     - `dectectedConf`: List[float], A list of detected confidence scores.
     - `detectedIDs`: List[int], A list of tracking IDs.
     - `detectedMidPoints`: List[Tuple[float, float]], A list of detected midpoints.
-    - `numProjection`: Dict[str, List[Tuple[int, int]]], A dict containing the number of projections per Category.
+    - `numProjection`: Dict[str, List[Set[int, int]]], A dict containing the number of projections per Category.
     - `hitBarResults`: List[Dict[str, int]], A list containing hitBars' evenBetterResults for each hitBar.
     - `accidentBoxes`: List[Tuple[float, float, float, float]], A list of accident bounding boxes.
     - `accidentsConf`: List[float], A list of accident confidence scores.
@@ -77,7 +77,7 @@ class Detector:
         self.dectectedConf: List[float] = list();
         self.detectedIDs: List[int] = list();
         self.detectedMidPoints: List[Tuple[float, float]] = list();
-        self.numProjection: Dict[str, List[Tuple[int, int]]] = dict();
+        self.numProjection: Dict[str, List[Set[int, int]]] = dict();
         self.hitBarResults: List[Dict[str, int]] = list();
         self.accidentBoxes: List[Tuple[float, float, float, float]] = list();
         self.accidentConf: List[float] = list();
@@ -226,9 +226,9 @@ class Detector:
                 
                 
             for idx, tag in enumerate(self.detectedLabels):
-                self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1 % self.MAX_COUNT;
-                self.numProjection[tag] = self.numProjection.get(tag, []);
-                self.numProjection[tag].append((self.detectedIDs[idx], self.detectedCounts[tag]));
+                self.detectedCounts[tag] = self.detectedCounts.get(tag, 0) + 1;
+                self.numProjection[tag] = self.numProjection.get(tag, set());
+                self.numProjection[tag].add((self.detectedIDs[idx], self.detectedCounts[tag]));
                 
                 
                 box = self.detectedBoxes[idx];
@@ -247,7 +247,7 @@ class Detector:
                     # 构建文本
                     labelString: str = "";
                     if addingCount:
-                        num = [x[1] for x in self.numProjection[tag] if x[0] == self.detectedIDs[idx]][0];
+                        num = [x[1] for x in list(self.numProjection[tag]) if x[0] == self.detectedIDs[idx]][0];
                         labelString += f" No.{num} ";
                     if addingLabel:
                         labelString += tag.capitalize();
@@ -318,7 +318,7 @@ class Detector:
         self.dectectedConf: List[float] = list();
         self.detectedIDs: List[int] = list();
         self.detectedMidPoints: List[Tuple[float, float]] = list();
-        self.numProjection: Dict[str, List[Tuple[int, int]]] = dict();
+        self.numProjection: Dict[str, List[Set[int, int]]] = dict();
         self.hitBarResults: List[Dict[str, int]] = list();
         self.accidentBoxes: List[Tuple[float, float, float, float]] = list();
         self.accidentConf: List[float] = list();
@@ -344,7 +344,6 @@ class Detector:
 if __name__ == "__main__":
     detector: Detector = Detector("./weights/yolov8s.pt");
     img: np.ndarray = cv2.imread("./image/dog.jpeg");
-    
     processedImg, detailedResult , _ = detector.detect(img);
     # print("detailedResult:", detailedResult);
 
