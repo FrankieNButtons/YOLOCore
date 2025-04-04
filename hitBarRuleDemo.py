@@ -8,10 +8,10 @@ import torch;
 
 h1his = [];
 h2his = [];
-detector = Detector("./weights/yolo12m.pt");
-hb1 = hitBar(name="hitBar1", imgSize=(0, 320), startPoint=(225,125), endPoint=(350, 70), 
+detector = Detector("./weights/yolo12n.pt");
+hb1 = hitBar(name="hitBar1", imgSize=(0, 320), startPoint=(350, 70), endPoint=(230,120), 
             monitor=["person", "car", "bus"], width=20.0, maxHis=50,lanes=4, visualize=True);
-hb2 = hitBar(name="hitBar2", imgSize=(0, 320), startPoint=(620,200), endPoint=(620, 70),
+hb2 = hitBar(name="hitBar2", imgSize=(0, 320), startPoint=(620, 70), endPoint=(620,200),
             monitor=["person", "car", "bus", "truck"], width=30.0, maxHis=50, visualize=True);
 hb1._monitor(["truck"]);
 
@@ -24,7 +24,7 @@ while True:
                                               addingConf=False, 
                                               hitBars=[hb1, hb2], 
                                               verbosity=2);
-        print(hitBarResults[0])
+        # print(hitBarResults[0])
         h1his.append(hitBarResults[0]["hitDetails"]);
         if len(h1his) > 100:
             h1his.pop(0);
@@ -33,7 +33,7 @@ while True:
             [h1Event.extend([h1Event["ID"] for h1Event in h1rec]) for h1rec in h1his];
         for event in hitBarResults[1]["hitDetails"]:
             if event["ID"] in h1Event:
-                print(f"No.{event['numInCat']} {event['cat']} Passed from hitBar1 to hitBar2");
+                print(f"No.{event['numInCat']} {event['cat']} Passed from {hb1.name} to {hb2.name}");
         cv2.imshow("Detect", img);
         
         key = cv2.waitKey(int(1000 / fps));

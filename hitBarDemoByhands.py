@@ -5,7 +5,7 @@ import numpy as np;
 from typing import List, Dict, Any, Optional, Tuple;
 
 detector = Detector("./weights/yolov8s.pt");
-hitBar = hitBar(name="hitBarDemo", imgSize=(0, 320), startPoint=(300,200), endPoint=(300, 50), monitor=["person", "car", "bus"], width=10.0, maxLength=50, visualize=True);
+hitBar = hitBar(name="hitBarDemo", imgSize=(0, 320), startPoint=(300,200), endPoint=(300, 50), monitor=["person", "car", "bus"], width=10.0, maxHis=50, visualize=True);
 hitBar._monitor(["truck"]);
 
 video = cv2.VideoCapture("./videos/clip1.mp4");

@@ -84,7 +84,7 @@ class hitBar:
         dx = self.endPoint[0] - self.startPoint[0];
         dy = self.endPoint[1] - self.startPoint[1];
 
-        self.norm = np.array([-dy, dx], dtype=np.float32);
+        self.norm = np.array([dy, -dx], dtype=np.float32);
         self.length: float = np.linalg.norm(self.norm).item();
         norm_n = np.linalg.norm(self.norm);
         if norm_n < 1e-6:
@@ -209,7 +209,7 @@ class hitBar:
                 if arr:
                     numInCat = arr[0];
 
-            if self._inRealm(pt, self.realmOut):
+            if self._inRealm(pt, self.realmOut) and not self._inRealm(pt, self.realmIn):
                 if self._hasIn(pt, cat, objID, numInCat):
                     self.Accumulator[cat] += 1;
                     print(f"[{self.name}] {cat} No.{numInCat} (ID={objID})  count={self.Accumulator[cat]};");
@@ -259,6 +259,7 @@ class hitBar:
                         self.direction = self.direction / np.linalg.norm(self.direction);
                         self.speedInFrame.append(np.linalg.norm(np.array([pt[0] - oldPt[0], pt[1] - oldPt[1]], dtype=np.float32)).item()
                                                  * self.fps / self.length * self.lanes * LANE_WIDTH * 3.6) # Unit: km/h 
+                        # print(f"Passed from {oldPt} to {pt}, speed: {self.speedInFrame[-1]:.2f}");
                         return True;
         return False;
 
@@ -294,7 +295,7 @@ if __name__ == "__main__":
         imgSize=bg.shape,
         startPoint=(200,150),
         endPoint=(600,450),
-        width=10.0,
+        width=40.0,
         name="demoBar",
         visualize=True
     );
