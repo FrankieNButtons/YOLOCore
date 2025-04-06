@@ -285,6 +285,7 @@ class Detector:
         
         if bool(hitBars):
             for hb in hitBars:
+                hb._monitor(self.SUPPORTTED_CATEGORIES);
                 self.outImg, evenBetterResults = hb.update(self.outImg, self.detailedResult);
                 self.hitBarResults.append(evenBetterResults);
         
