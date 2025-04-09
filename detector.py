@@ -10,6 +10,7 @@ import seaborn as sns;
 import matplotlib.pyplot as plt;
 import ultralytics;
 from ultralytics import solutions;
+import torch;
 import os;
 import logging;
 
@@ -53,7 +54,7 @@ class Detector:
     SUPPORTTED_CATEGORIES: List[str] = ["person", "car", "bus", "van", "truck"];
     MAX_COUNT: int = 1000;
 
-    def __init__(self, modelPath: str = "./weights/yolov8m.pt", accidentDetection: bool=True) -> None:
+    def __init__(self, modelPath: str = "./weights/yolov8m.pt") -> None:
         """
         **Description**  
         Initializes the Detector object with a specified YOLOv8 model path.
@@ -64,7 +65,7 @@ class Detector:
         **Returns**
         - None
         """
-        self._loadModel(modelPath, accidentDetection=accidentDetection);
+        self._loadModel(modelPath);
         self.outImg: Optional[np.ndarray] = None;
         self.detailedResult: Dict[str, Any] = {
             "success": True,
@@ -93,6 +94,7 @@ class Detector:
         addingCount: bool = True,
         pallete: Optional[Dict[str, Tuple[int, int, int]]] = None,
         hitBars: Optional[List[hitBar]] = None,
+        accidentDetection: bool=True,
         verbosity:int = 0
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
@@ -109,6 +111,7 @@ class Detector:
             addingCount,
             pallete,
             hitBars,
+            accidentDetection,
             verbosity
         );
         
@@ -126,6 +129,7 @@ class Detector:
         addingCount: bool,
         pallete: Optional[Dict[str, Tuple[int, int, int]]],
         hitBars: Optional[List[hitBar]],
+        accidentDetection: bool,
         verbosity: int
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
@@ -163,7 +167,7 @@ class Detector:
             };
 
         try:
-            if self.accDetector is not None:
+            if self.accDetector is not None and accidentDetection:
                 accidents = self.accDetector(oriImg);
             results = self.model.track(source=oriImg, conf=conf, persist=True);
         except Exception as e:
@@ -319,7 +323,7 @@ class Detector:
         self.dectectedConf: List[float] = list();
         self.detectedIDs: List[int] = list();
         self.detectedMidPoints: List[Tuple[float, float]] = list();
-        self.numProjection: Dict[str, List[Set[int, int]]] = dict();
+        # self.numProjection: Dict[str, List[Set[int, int]]] = dict();
         self.hitBarResults: List[Dict[str, int]] = list();
         self.accidentBoxes: List[Tuple[float, float, float, float]] = list();
         self.accidentConf: List[float] = list();
@@ -337,6 +341,7 @@ class Detector:
         **Returns**
         - None
         """
+        # torch.set_default_device("mps");
         if accidentDetection:
             self.accDetector = YOLO("./weights/accdetect.pt");
         self.model = YOLO(modelPath);

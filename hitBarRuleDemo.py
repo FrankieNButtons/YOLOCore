@@ -8,7 +8,7 @@ import torch;
 
 h1his = [];
 h2his = [];
-detector = Detector("./weights/yolo12n.pt");
+detector = Detector("./weights/bestforproblem20.pt");
 hb1 = hitBar(name="hitBar1", imgSize=(0, 320), startPoint=(350, 70), endPoint=(230,120), 
             monitor=["person", "car", "bus"], width=20.0, maxHis=50,lanes=4, visualize=True);
 hb2 = hitBar(name="hitBar2", imgSize=(0, 320), startPoint=(620, 70), endPoint=(620,200),
