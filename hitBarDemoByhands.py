@@ -5,10 +5,10 @@ import numpy as np;
 from typing import List, Dict, Any, Optional, Tuple;
 
 detector = Detector("./weights/bestforproblem20.pt");
-hitBar = hitBar(name="hitBarDemo", imgSize=(0, 320), startPoint=(300, 50), endPoint=(300,200), monitor=["person", "car", "bus"], width=10.0, maxHis=50, visualize=True);
+hitBar = hitBar(name="hitBarDemo", imgSize=(1920, 1080), startPoint=(800, 950), endPoint=(725,500), monitor=["person", "car", "bus"], width=50.0, maxHis=50, visualize=True);
 hitBar._monitor(["truck"]);
 
-video = cv2.VideoCapture("./videos/clip1.mp4");
+video = cv2.VideoCapture("./videos/allCat.mp4");
 fps = video.get(cv2.CAP_PROP_FPS);
 while True:
     ret, frame = video.read();
@@ -23,4 +23,3 @@ while True:
         if key == ord("q"):
             break;
 cv2.destroyAllWindows();
-        

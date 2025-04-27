@@ -82,6 +82,7 @@ class Detector:
         self.hitBarResults: List[Dict[str, int]] = list();
         self.accidentBoxes: List[Tuple[float, float, float, float]] = list();
         self.accidentConf: List[float] = list();
+        self.convolved = True;
         
         
     def detect(
@@ -222,9 +223,13 @@ class Detector:
             
             try:
                 self.detectedIDs = list(map(lambda x: int(x), results[0].boxes.id.cpu().numpy().tolist()));
+                self.convolved = True;
             except Exception as e:
-                print(f"IDs resetted as model didnot convolve in tracking.");
+                if self.convolved:
+                    print(f"IDs resetted as model didnot convolve in tracking.");
                 self.detectedIDs = list(range(len(self.detectedLabels)));
+                self.convolved = False;
+            
 
                 
                 

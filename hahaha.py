@@ -1,54 +1,92 @@
-import cv2
-import asyncio
-import threading
+import cv2;
+import asyncio;
+import threading;
+from typing import Optional;
+import numpy as np;
 
-# 初始化视频捕获
-cap = cv2.VideoCapture("http://208.193.47.61/mjpg/video.mjpg")
+# 初始化视频捕获 / Initialize video capture
+videoCapture = cv2.VideoCapture("http://208.193.47.61/mjpg/video.mjpg");
 
-# 存储帧的列表
-frames = []
+# 存储帧的列表 / Frame buffer
+frameBuffer: list = [];
 
-def fetch():
-    """从摄像头获取帧"""
-    ret, frame = cap.read()
+def fetchFrame() -> Optional[np.ndarray]:
+    """
+    **Description**  
+    从摄像头获取一帧图像 / Fetch a frame from the camera
+
+    **Params**  
+    - None
+
+    **Returns**  
+    - `Optional[np.ndarray]`: 返回图像帧，失败时为 None / Frame or None if failed
+    """
+    ret, frame = videoCapture.read();
     if not ret:
-        print("无法接收帧，可能是流中断")
-        return None
-    return frame
+        print("无法接收帧，可能是流中断 / Unable to receive frame, stream might be broken");
+        return None;
+    return frame;
 
-def generate_frame():
-    """持续获取帧并存入 frames 列表"""
+def generateFrameLoop() -> None:
+    """
+    **Description**  
+    持续从摄像头获取帧并加入帧列表 / Continuously fetch frames and add to buffer
+
+    **Params**  
+    - None
+
+    **Returns**  
+    - None
+    """
     while True:
-        frame = fetch()
+        frame = fetchFrame();
         if frame is not None:
-            frames.append(frame)
+            frameBuffer.append(frame);
 
-def show():
-    """从 frames 列表中取出帧并显示"""
+def displayFrames() -> None:
+    """
+    **Description**  
+    显示帧列表中的图像帧 / Display frames from buffer
+
+    **Params**  
+    - None
+
+    **Returns**  
+    - None
+    """
     while True:
-        if frames:
-            frame = frames.pop(0)
-            cv2.imshow("frame", frame)
+        if frameBuffer:
+            frame = frameBuffer.pop(0);
+            cv2.imshow("frame", frame);
 
-        # 按 'q' 退出
+        # 按 'q' 退出 / Press 'q' to quit
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            break;
 
-    cap.release()
-    cv2.destroyAllWindows()
+    videoCapture.release();
+    cv2.destroyAllWindows();
 
-async def video_streamer():
-    """异步函数，用于以 MJPEG 格式流式传输帧"""
+async def videoStreamer() -> None:
+    """
+    **Description**  
+    异步流式传输视频帧（MJPEG 格式）/ Stream video frames asynchronously (MJPEG)
+
+    **Params**  
+    - None
+
+    **Returns**  
+    - Async generator yielding JPEG-encoded frame bytes
+    """
     while True:
-        if frames:
-            frame = frames.pop(0)
-            _, buffer = cv2.imencode('.jpg', frame)
+        if frameBuffer:
+            frame = frameBuffer.pop(0);
+            _, buffer = cv2.imencode('.jpg', frame);
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-        await asyncio.sleep(0.03)  # 控制帧率，防止 CPU 过载
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n');
+        await asyncio.sleep(0.03);  # 控制帧率，防止 CPU 过载 / Control FPS to avoid CPU overload
 
-# 启动获取帧的线程
-threading.Thread(target=generate_frame, daemon=True).start()
+# 启动获取帧的线程 / Start frame acquisition thread
+threading.Thread(target=generateFrameLoop, daemon=True).start();
 
-# 运行显示函数
-show()
+# 启动显示线程 / Start frame display loop
+displayFrames();
